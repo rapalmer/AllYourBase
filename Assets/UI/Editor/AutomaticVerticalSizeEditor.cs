@@ -1,13 +1,19 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System.Collections;
 
-[CustomEditor(typeof(AutoVertSize))]
+[CustomEditor(typeof(AutomaticVerticalSize))]
 public class AutomaticVerticalSizeEditor : Editor {
 
-    public override void OnInspectorGUI()
-    {
-        DrawDefaultInspector();
+	public override void OnInspectorGUI () {
+		 
+		DrawDefaultInspector();
 
-        if (GUILayout.Button("Calculate Size")) { ((AutoVertSize)target).AdjustSize(); }
-    }
+		if( GUILayout.Button("Recalc Size") ) {
+			AutomaticVerticalSize myScript = ((AutomaticVerticalSize)target);
+			myScript.AdjustSize();
+		}
+
+	}
+
 }

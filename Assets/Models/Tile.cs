@@ -7,14 +7,13 @@ using UnityEngine;
 using System.Collections;
 using System;
 
+// TileType is the base type of the tile. In some tile-based games, that might be
+// the terrain type. For us, we only need to differentiate between empty space
+// and floor (a.k.a. the station structure/scaffold). Walls/Doors/etc... will be
+// InstalledObjects sitting on top of the floor.
+public enum TileType { Empty, Floor };
+
 public class Tile {
-
-	// TileType is the base type of the tile. In some tile-based games, that might be
-	// the terrain type. For us, we only need to differentiate between empty space
-	// and floor (a.k.a. the station structure/scaffold). Walls/Doors/etc... will be
-	// InstalledObjects sitting on top of the floor.
-	public enum TileType { Empty, Floor };
-
 	private TileType _type = TileType.Empty;
 	public TileType Type {
 		get { return _type; }
@@ -23,24 +22,32 @@ public class Tile {
 			_type = value;
 			// Call the callback and let things know we've changed.
 
-			if(cbTileTypeChanged != null && oldType != _type)
-				cbTileTypeChanged(this);
+			if(cbTileChanged != null && oldType != _type) {
+				cbTileChanged(this);
+			}
 		}
 	}
 
 	// LooseObject is something like a drill or a stack of metal sitting on the floor
-	LooseObject looseObject;
+	Inventory inventory;
 
-	// InstalledObject is something like a wall, door, or sofa.
-	InstalledObject installedObject;
+	// Furniture is something like a wall, door, or sofa.
+	public Furniture furniture {
+		get; protected set;
+	}
+
+	// FIXME: This seems like a terrible way to flag if a job is pending
+	// on a tile.  This is going to be prone to errors in set/clear.
+	public Job pendingFurnitureJob;
 
 	// We need to know the context in which we exist. Probably. Maybe.
-	World world;
+	public World world { get; protected set; }
+
 	public int X { get; protected set; }
 	public int Y { get; protected set; }
 
-	// The function we callback any time our type changes
-	Action<Tile> cbTileTypeChanged;
+	// The function we callback any time our tile's data changes
+	Action<Tile> cbTileChanged;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Tile"/> class.
@@ -58,14 +65,34 @@ public class Tile {
 	/// Register a function to be called back when our tile type changes.
 	/// </summary>
 	public void RegisterTileTypeChangedCallback(Action<Tile> callback) {
-		cbTileTypeChanged += callback;
+		cbTileChanged += callback;
 	}
 	
 	/// <summary>
 	/// Unregister a callback.
 	/// </summary>
-	public void UnegisterTileTypeChangedCallback(Action<Tile> callback) {
-		cbTileTypeChanged -= callback;
+	public void UnregisterTileTypeChangedCallback(Action<Tile> callback) {
+		cbTileChanged -= callback;
+	}
+
+	public bool PlaceFurniture(Furniture objInstance) {
+		if(objInstance == null) {
+			// We are uninstalling whatever was here before.
+			furniture = null;
+			return true;
+		}
+
+		// objInstance isn't null
+
+		if(furniture != null) {
+			Debug.LogError("Trying to assign a furniture to a tile that already has one!");
+			return false;
+		}
+
+		// At this point, everything's fine!
+
+		furniture = objInstance;
+		return true;
 	}
 	
 }
