@@ -34,5 +34,10 @@ public class JobQueue {
     {
         cbJobCreated -= cb;
     }
- 
+
+    public Job Dequeue()
+    {
+        if (jobQueue.Count == 0) return null;
+        return jobQueue.Dequeue();
+    }
 }
