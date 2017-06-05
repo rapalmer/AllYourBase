@@ -12,6 +12,8 @@ public class World {
 	// A two-dimensional array to hold our tile data.
 	Tile[,] tiles;
 
+    List<Character> characters;
+
 	Dictionary<string, Furniture> furniturePrototypes;
 
 	// The tile width of the world.
@@ -22,6 +24,7 @@ public class World {
 
 	Action<Furniture> cbFurnitureCreated;
 	Action<Tile> cbTileChanged;
+    Action<Character> cbCharacterCreated;
 
     public JobQueue jobQueue;
 
@@ -48,7 +51,17 @@ public class World {
 		Debug.Log ("World created with " + (Width*Height) + " tiles.");
 
 		CreateFurniturePrototypes();
+
+        characters = new List<Character>();
+        
 	}
+
+    public void CreateCharacter(Tile t)
+    {
+        Character c = new Character(t);
+        if(cbCharacterCreated != null)
+            cbCharacterCreated(c);
+    }
 
 	void CreateFurniturePrototypes() {
 		furniturePrototypes = new Dictionary<string, Furniture>();
@@ -127,7 +140,17 @@ public class World {
 		cbFurnitureCreated -= callbackfunc;
 	}
 
-	public void RegisterTileChanged(Action<Tile> callbackfunc) {
+    public void RegisterCharacterCreated(Action<Character> callbackfunc)
+    {
+        cbCharacterCreated += callbackfunc;
+    }
+
+    public void UnregisterCharacterCreated(Action<Character> callbackfunc)
+    {
+        cbCharacterCreated -= callbackfunc;
+    }
+
+    public void RegisterTileChanged(Action<Tile> callbackfunc) {
 		cbTileChanged += callbackfunc;
 	}
 
